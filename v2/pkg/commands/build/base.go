@@ -430,6 +430,10 @@ func generateRuntimeWrapper(options *Options) error {
 		options.WailsJSDir = filepath.Join(cwd, "frontend")
 	}
 	wrapperDir := filepath.Join(options.WailsJSDir, "wailsjs", "runtime")
+	// 跳过构建,并且文件夹存在
+	if _, err := os.Stat(wrapperDir); !os.IsNotExist(err) && options.SkipBindings {
+		return nil
+	}
 	_ = os.RemoveAll(wrapperDir)
 	extractor := gosod.New(wrapper.RuntimeWrapper)
 	err := extractor.Extract(wrapperDir, nil)

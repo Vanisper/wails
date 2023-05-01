@@ -119,6 +119,8 @@ func Application(f *flags.Dev, logger *clilogger.CLILogger) error {
 	// Do initial build but only for the application.
 	logger.Println("Building application for development...")
 	buildOptions.IgnoreFrontend = true
+	// 在此之前已经构建过wailsjs下的文件 故,此处需要跳过构建
+	buildOptions.SkipBindings = true
 	debugBinaryProcess, appBinary, err := restartApp(buildOptions, nil, f, exitCodeChannel, legacyUseDevServerInsteadofCustomScheme)
 	buildOptions.IgnoreFrontend = ignoreFrontend || f.FrontendDevServerURL != ""
 	if err != nil {
@@ -165,6 +167,9 @@ func Application(f *flags.Dev, logger *clilogger.CLILogger) error {
 	}()
 
 	// Watch for changes and trigger restartApp()
+	// 此时是dev时,完成构建后的情况
+	// 每次刷新都要重新构建wailsjs下的文件,故不能SkipBindings
+	buildOptions.SkipBindings = false
 	debugBinaryProcess = doWatcherLoop(buildOptions, debugBinaryProcess, f, watcher, exitCodeChannel, quitChannel, f.DevServerURL(), legacyUseDevServerInsteadofCustomScheme)
 
 	// Kill the current program if running and remove dev binary
